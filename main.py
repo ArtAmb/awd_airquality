@@ -29,7 +29,8 @@ def showStatsGraph(summaries):
 
 
 def main():
-    columns_names_to_process = ["CO(GT)", "PT08.S1(CO)", "NMHC(GT)", "C6H6(GT)", "PT08.S2(NMHC)"]
+    # columns_names_to_process = ["CO(GT)", "PT08.S1(CO)", "NMHC(GT)", "C6H6(GT)", "PT08.S2(NMHC)"]
+    columns_names_to_process = ["CO(GT)", "PT08.S1(CO)", "NMHC(GT)", "T", "AH"]
     data = pd.read_csv("AirQualityUCI.csv", delimiter=";")
     print("Number of cells")
     print(data.size)
@@ -58,7 +59,7 @@ def main():
         my_stats.print_outliers(newData[col])
 
     col1 = columns_names_to_process[0]
-    col2 = columns_names_to_process[1]
+    col2 = columns_names_to_process[3]
     view.print_title("Pearson correlation coefficient")
     my_stats.pearson_correlation(col1, col2, newData)
 
