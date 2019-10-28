@@ -1,14 +1,31 @@
 import statistics as stats
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
-import validator
 
 import my_stats
 import remove as rm
+import validator
 import view
+
+stats_labels = ["MEAN", "MIN", "MAX", "MEDIAN", "STDEV", "IQR"]
+
+def getValuesFor(summary):
+    result = []
+    for label in stats_labels:
+        result.append(summary[label])
+
+    return result
+
+def showStatsGraph(summaries):
+    for summary in summaries:
+        values = getValuesFor(summary)
+        values.extend(summary["QUANTILES"])
+        view_labels = stats_labels.copy()
+        view_labels.extend(["0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9"])
+        plot_bar("Stats for " + summary["COLUMN_NAME"], view_labels, values)
+        plt.show()
 
 
 def main():
@@ -33,7 +50,7 @@ def main():
     for col in columns_names_to_process:
         newData[col] = rm.findOkElements(data[col].values)
     view.print_title("Stats of columns")
-    printColumnStats(columns_names_to_process, data, newData)
+    summaries = printColumnStats(columns_names_to_process, data, newData)
 
     view.print_title("Outliners")
     for col in columns_names_to_process:
@@ -49,10 +66,12 @@ def main():
     my_stats.linregress(col1, col2, newData)
     plt.show()
 
+    showStatsGraph(summaries)
+
     data.plot.hist()
     plt.show()
 
-    data.boxplot(column = columns_names_to_process)
+    data.boxplot(column=columns_names_to_process)
     plt.show()
 
     view.showScatterGraph(data, columns_names_to_process[0], columns_names_to_process[1])
@@ -61,28 +80,53 @@ def main():
 
 
 def printColumnStats(columns_names_to_process, data, newData):
+    summaries = []
+
     for col in columns_names_to_process:
+        summary = {}
+        summary["COLUMN_NAME"] = col
+        summary["MEAN"] = stats.mean(newData[col])
+        summary["MIN"] = min(newData[col])
+        summary["MAX"] = max(newData[col])
+        summary["MEDIAN"] = stats.median(newData[col])
+        summary["STDEV"] = stats.stdev(newData[col])
+        summary["IQR"] = my_stats.calculate_iqr(newData[col])
+        summary["QUANTILES"] = []
+
         print("Column: " + col)
         print("Mean with error fields: ", end=" ")
         print(data[col].mean())
         print("Mean without error fields: ", end=" ")
-        print(stats.mean(newData[col]))
+        print(summary["MEAN"])
         print("Min ", end=" ")
-        print(min(newData[col]))
+        print(summary["MIN"])
         print("Max ", end=" ")
-        print(max(newData[col]))
+        print(summary["MAX"])
         print("Median ", end=" ")
-        print(stats.median(newData[col]))
+        print(summary["MEDIAN"])
         print("Standard deviation: ", end=" ")
-        print(stats.stdev(newData[col]))
+        print(summary["STDEV"])
         print("IQR: ", end=" ")
-        print(my_stats.calculate_iqr(newData[col]))
+        print(summary["IQR"])
         for qua in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
             print("Quantile[", end="")
             print(qua, end="] ")
-            print(np.quantile(newData[col], qua))
+            quantilVal = np.quantile(newData[col], qua)
+            print(quantilVal)
+            summary["QUANTILES"].append(quantilVal)
         print()
+        summaries.append(summary)
 
+    return summaries
+
+def plot_bar(title, labels, values):
+    index = np.arange(len(labels))
+    plt.bar(index, values)
+    # plt.xlabel('Genre', fontsize=5)
+    # plt.ylabel('No of Movies', fontsize=5)
+    plt.xticks(index, labels, fontsize=5, rotation=30)
+    plt.title(title)
+    plt.show()
 
 if __name__ == '__main__':
     main()
