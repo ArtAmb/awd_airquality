@@ -1,5 +1,6 @@
 from scipy import stats as scipy_stats
 import matplotlib.pyplot as plt
+import numpy as np
 from sklearn.linear_model import LinearRegression
 
 def pearson_correlation(col1, col2, newData):
@@ -30,6 +31,35 @@ def linregress(col1, col2, newData):
 
 def func(x, slope, intercept):
     return slope * x + intercept
+
+def calculate_iqr(values):
+    q1 = np.quantile(values, 0.25)
+    q3 = np.quantile(values, 0.75)
+    return calculate_iqr_form_quantiles(q3, q1)
+
+def calculate_iqr_form_quantiles(q3, q1):
+    return q3 - q1
+
+def print_outliers(values):
+    q1 = np.quantile(values, 0.25)
+    q3 = np.quantile(values, 0.75)
+    iqr = calculate_iqr_form_quantiles(q3, q1)
+
+    bias_low = q1 - 1.5 * iqr
+    bias_high = q3 + 1.5 * iqr
+
+    print("Under ", end=" ")
+    print(bias_low)
+    for v in values:
+        if v < bias_low:
+            print(v)
+
+    print("Above ", end=" ")
+    print(bias_high)
+    for v in values:
+        if v >= bias_high:
+            print(v)
+
 
 
     # X = val1.reshape(-1, 1)

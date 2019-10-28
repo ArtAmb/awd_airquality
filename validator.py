@@ -56,6 +56,15 @@ class RowValidator:
                        "AH": NoNegativeValueValidator()}
                       )
 
+    def valid_value(self, column, values):
+        result = []
+        specificValidator = self.validators[column]
+        for value in values:
+            if specificValidator.valid(value):
+                result.append(value)
+
+        return result
+
     def __init__(self, column_names):
         self.column_names = column_names
 
