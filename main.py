@@ -27,9 +27,8 @@ def showStatsGraph(summaries):
         plot_bar("Stats for " + summary["COLUMN_NAME"], view_labels, values)
         plt.show()
 
-
+# columns_names_to_process = ["CO(GT)", "PT08.S1(CO)", "NMHC(GT)", "C6H6(GT)", "PT08.S2(NMHC)"]
 def main():
-    # columns_names_to_process = ["CO(GT)", "PT08.S1(CO)", "NMHC(GT)", "C6H6(GT)", "PT08.S2(NMHC)"]
     columns_names_to_process = ["CO(GT)", "PT08.S1(CO)", "NMHC(GT)", "T", "AH"]
     data = pd.read_csv("AirQualityUCI.csv", delimiter=";")
     print("Number of cells")
@@ -40,13 +39,10 @@ def main():
     print(data.size)
     print("Removing error elements....")
 
-    dataValidator = validator.RowValidator(columns_names_to_process);
-
     for col in columns_names_to_process:
         indexes_to_drop = data[data[col] < 0].index
         data.drop(indexes_to_drop, inplace=True)
     print(data.size)
-
     newData = {}
     for col in columns_names_to_process:
         newData[col] = rm.findOkElements(data[col].values)
@@ -97,8 +93,8 @@ def printColumnStats(columns_names_to_process, data, newData):
         print("Column: " + col)
         print("Mean with error fields: ", end=" ")
         print(data[col].mean())
-        print("Mean without error fields: ", end=" ")
-        print(summary["MEAN"])
+        # print("Mean without error fields: ", end=" ")
+        # print(summary["MEAN"])
         print("Min ", end=" ")
         print(summary["MIN"])
         print("Max ", end=" ")
@@ -123,8 +119,6 @@ def printColumnStats(columns_names_to_process, data, newData):
 def plot_bar(title, labels, values):
     index = np.arange(len(labels))
     plt.bar(index, values)
-    # plt.xlabel('Genre', fontsize=5)
-    # plt.ylabel('No of Movies', fontsize=5)
     plt.xticks(index, labels, fontsize=5, rotation=30)
     plt.title(title)
     plt.show()
