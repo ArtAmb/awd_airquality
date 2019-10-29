@@ -58,6 +58,8 @@ def main():
     col2 = columns_names_to_process[3]
     view.print_title("Pearson correlation coefficient")
     my_stats.pearson_correlation(col1, col2, newData)
+    my_stats.pearson_correlation("CO(GT)", "PT08.S1(CO)", newData)
+
 
     view.print_title("Linear regression")
     my_stats.linregress(col1, col2, newData)
