@@ -1,0 +1,20 @@
+from enum import Enum
+
+class Columns(Enum):
+    year = "year"
+    month = "month"
+    day = "day"
+    hour = "hour"
+    PM25 = "PM2.5"
+    PM10 = "PM10"
+    SO2 = "SO2"
+    NO2 = "NO2"
+    CO = "CO"
+    O3 = "O3"
+    TEMP = "TEMP"
+    PRES = "PRES"
+    DEWP = "DEWP"
+    RAIN = "RAIN"
+    wd = "wd"
+    WSPM = "WSPM"
+    station = "station"

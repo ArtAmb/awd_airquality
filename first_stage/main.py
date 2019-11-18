@@ -4,10 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-import my_stats
-import remove as rm
-import validator
-import view
+from first_stage import remove as rm, view, my_stats
 
 stats_labels = ["MEAN", "MIN", "MAX", "MEDIAN", "STDEV", "IQR"]
 
