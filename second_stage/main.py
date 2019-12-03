@@ -1,58 +1,75 @@
 import pandas as pd
 
+import second_stage.dataset_devider as dd
+from second_stage.dataset_manager import Columns
+from second_stage.labels import AirQuality
+from second_stage.neural_network import NeutralNetwork
+import numpy as np
 
-def clean(data):
-    data.dropna(how="all", axis='index', inplace=True)
-    data.dropna(how="all", axis='columns', inplace=True)
-    data.fillna(inplace=True, method="ffill")
-    data.fillna(inplace=True, method="bfill")
+def print_stats(dataset, data_type):
+    print(data_type)
+    print(dataset[data_type][Columns.LABEL.value].value_counts())
+
+
+IMPORTANT_COLUMNS = [
+    Columns.month,
+    Columns.PM10,
+    Columns.PM25,
+    Columns.O3,
+    Columns.NO2,
+    Columns.SO2,
+    Columns.CO,
+    Columns.TEMP,
+    Columns.PRES,
+    Columns.DEWP,
+    Columns.RAIN,
+    Columns.WSPM]
+
+
+def get_expected_output(expected_label):
+    result = [0, 0, 0, 0, 0, 0, 0]
+    idx = AirQuality[expected_label].value
+    result[idx] = 1
+    return result
+
+
+def prepare_inputs(row):
+    inputs = []
+    for col in IMPORTANT_COLUMNS:
+        inputs.append(row[col.value])
+    return inputs
 
 
 def main():
     print("Air quality in Changping, one of the Pekin's district, in 2013.03.01 - 2017.02.28")
-    data = pd.read_csv("dataset.csv", delimiter=",")
+    data = pd.read_csv("labeled_dataset.csv", delimiter=",")
+    dataset = dd.devide_dataset(data)
 
-    print(data.mean())
-    clean(data)
-    print(data.mean())
+    print_stats(dataset, "learning")
+    print_stats(dataset, "testing")
+    print_stats(dataset, "validating")
 
+    inputs_count = IMPORTANT_COLUMNS.__len__()
+    outputs_count = AirQuality.__len__()
 
-    all_rows_count = data.shape[0]
+    neutral_network = NeutralNetwork(inputs_count, [
+        [inputs_count, 1],
+        [outputs_count, 1]])
 
-    learning_rows_count, testing_rows_count, validating_rows_count = find_dataset_indexes(all_rows_count)
+    for index, row in dataset["learning"].iterrows():
+        inputs = prepare_inputs(row)
+        outputs = neutral_network.calculate_output(inputs)
 
-    print("")
-    print(learning_rows_count)
-    print(testing_rows_count)
-    print(validating_rows_count)
+        expected_values = get_expected_output(row[Columns.LABEL.value])
+        errors = np.subtract(expected_values, outputs)
 
-    print("")
-    print(all_rows_count)
-    print(learning_rows_count + testing_rows_count + validating_rows_count)
+        neutral_network.backpropagation(errors)
 
-    learning_dataset = new_dataset(data, 0, learning_rows_count)
-    testing_dataset = new_dataset(data, learning_rows_count, learning_rows_count + testing_rows_count)
-    validating_dataset = new_dataset(data, learning_rows_count + testing_rows_count, learning_rows_count + testing_rows_count + validating_rows_count)
-
-    print("")
-    print(learning_dataset.shape[0])
-    print(testing_dataset.shape[0])
-    print(validating_dataset.shape[0])
-
-
-def new_dataset(data, start_idx,  end_idx):
-    return data.iloc[start_idx: end_idx].reset_index(drop=True)
-
-
-def find_dataset_indexes(all_rows_count):
-    learning_rows_count = int(all_rows_count * 0.6)
-    testing_rows_count = int(all_rows_count * 0.2)
-    validating_rows_count = int(all_rows_count * 0.2)
-
-    size = learning_rows_count + testing_rows_count + validating_rows_count
-    correct = all_rows_count - size
-    learning_rows_count = learning_rows_count + correct
-    return learning_rows_count, testing_rows_count, validating_rows_count
+        # print(row[Columns.LABEL.value])
+        # print(expected_values)
+        # print(outputs)
+        # print(np.subtract(expected_values, outputs))
+        # print(outputs)
 
 
 if __name__ == '__main__':

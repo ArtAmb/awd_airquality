@@ -18,3 +18,5 @@ class Columns(Enum):
     wd = "wd"
     WSPM = "WSPM"
     station = "station"
+    NO = "No"
+    LABEL="LABEL"
