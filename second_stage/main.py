@@ -68,10 +68,9 @@ def main():
 
     print("START LEARNING")
     for epoch in range(0, 10):
-        success_counter = 0
-        epoch_result = learning_process(dataset, neutral_network, success_counter)
-        print("EPOKA " + str(epoch) + " SUKCESY " + str(success_counter))
-        print(epoch_result)
+        epoch_result, success_counter = learning_process(dataset, neutral_network)
+        print("EPOKA " + str(epoch) + " SUKCESY " + str(success_counter) + " / " + str(dataset["learning"].shape[0]))
+        # print(epoch_result)
         # visualize_on_plot(epoch_result)
 
     print("STOP LEARNING")
@@ -83,8 +82,10 @@ def visualize_on_plot(epoch_result):
     plt.pause(0.05)
 
 
-def learning_process(dataset, neutral_network, success_counter):
+def learning_process(dataset, neutral_network):
     epoch_result = 0
+    success_counter = 0
+
     COUNTER = {}
     for x in AirQuality:
         COUNTER[x.name] = 0
@@ -101,19 +102,26 @@ def learning_process(dataset, neutral_network, success_counter):
         # print(errors)
         neutral_network.backpropagation(errors)
 
+        # print_info(expected_values, outputs)
+
         if np.array_equal(expected_values, [round(v) for v in outputs]):
             success_counter = success_counter + 1
 
-    print(COUNTER)
-    return epoch_result
+    # print(COUNTER)
+    return epoch_result, success_counter
 
-        # waga = waga + współczynnik_uczenia * wyjście * błąd
+    # waga = waga + współczynnik_uczenia * wyjście * błąd
 
-        # print(row[Columns.LABEL.value])
-        # print(expected_values)
-        # print(outputs)
-        # print(np.subtract(expected_values, outputs))
-        # print(outputs)
+    # print(row[Columns.LABEL.value])
+    # print(expected_values)
+    # print(outputs)
+    # print(np.subtract(expected_values, outputs))
+    # print(outputs)
+
+
+def print_info(expected_values, outputs):
+    print("PREDICTED == " + str([round(v) for v in outputs]))
+    print("EXPECTED == " + str(expected_values))
 
 
 if __name__ == '__main__':

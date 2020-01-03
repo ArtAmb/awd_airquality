@@ -12,7 +12,7 @@ def derivative_of_sigmoid(x):
     return f * (1 - f)
 
 
-LEARNING_RATE = 0.7
+LEARNING_RATE = 0.1
 
 
 class Neuron:
@@ -31,16 +31,25 @@ class Neuron:
         return derivative_of_sigmoid(value)
 
     def calculate_output(self, inputs):
+        self.last_inputs = inputs
         result = np.multiply(inputs, self.wages)
-        self.last_output = self.activation_func(sum(result))
+        suma = sum(result)
+
+        self.last_output = self.activation_func(suma)
+        self.last_derivative_output = self.derivative_activation_func(suma)
+
         return self.last_output
 
     # def backpropagation(self, errors):
     #     result = np.multiply(errors, self.wages)
     #     return self.derivative_activation_func(sum(result))
-    def update_wages(self, layer_errors):
-        deltas = np.multiply(layer_errors, self.last_output * LEARNING_RATE)
+    def update_wages(self, error):
+        tmp = LEARNING_RATE * self.last_derivative_output * error
+        deltas = np.multiply(self.last_inputs, tmp)
         self.wages = np.add(self.wages, deltas)
+
+    def calculate_error(self, errors):
+        return np.sum(np.multiply(self.wages, errors))
 
 
 class Layer:
@@ -69,6 +78,12 @@ class Layer:
             res.append(np.zeros(l))
             return res
 
+    # def backpropagation(self, errors):
+    #     return [n.calculate_error(errors) for n in self.neurons]
+
+    def save_errors(self, errors):
+        self.current_errors = errors
+
     def backpropagation(self, errors):
         # errors.append(0)  ????????? TODO co z bias ????
         neuron_wages = np.array(self.get_neuron_wages(errors))
@@ -78,12 +93,19 @@ class Layer:
 
     def calculate_backpropagation(self, errors, wages):
         result = np.multiply(errors, wages)
-        return self.derivative_activation_func(sum(result))
+        return sum(result)
 
     def update_wages(self, layer_errors):
         # waga = waga + współczynnik_uczenia * wyjście * błąd
-        for n in self.neurons:
-            n.update_wages(layer_errors)
+
+        if layer_errors.__len__() != self.neurons.__len__():
+            if layer_errors.__len__() - self.neurons.__len__() == 1:
+                del layer_errors[-1]
+            else:
+                raise Exception("layer_errors no equals to neurons")
+
+        for idx in range(0, layer_errors.__len__()):
+            self.neurons[idx].update_wages(layer_errors[idx])
 
 
 NUMBER_OF_NEURONS = 0
@@ -114,8 +136,10 @@ class NeutralNetwork:
         errors_of_prev_layer = errors
         # print(errors)
         for layer in reversed(self.layers):
+            layer.save_errors(errors_of_prev_layer)
+
             layer_errors = layer.backpropagation(errors_of_prev_layer)
-            layer.update_wages(layer_errors)
+            layer.update_wages(errors_of_prev_layer)
 
             errors_of_prev_layer = layer_errors
 
