@@ -1,10 +1,28 @@
-import matplotlib.pyplot as plt
-import numpy as np
+from timeit import timeit
+
+from second_stage.main import IMPORTANT_COLUMNS
 
 
 def main():
-    res = np.multiply(np.array([2,2,8]), 0.5 * 0.5)
-    print(res)
+    tmp = [10] * 5
+
+    test1 = """
+inputs = []
+for i in range(0, 7):
+     inputs.append(10)
+ """
+
+    test2 =  """
+inputs = []
+for i in range(0, 7):
+     inputs += [10]
+ """
+
+    print(timeit(test1))
+    print(timeit(test2))
+
+    # res = np.multiply(np.array([2,2,8]), 0.5 * 0.5)
+    # print(res)
     #
     # res = np.array([[1, 2, 3],
     #                 [4, 5, 6],

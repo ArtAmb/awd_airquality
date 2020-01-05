@@ -1,3 +1,5 @@
+import time
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -43,11 +45,31 @@ def prepare_inputs(row):
 
 
 PLOT_DATA = [[], [], [], [], [], [], []]
-
+SUCCESS_PLOT_DATA = []
 
 def update_plot_data(errors):
     for x in range(0, AirQuality.__len__()):
         PLOT_DATA[x].append(errors[x])
+
+
+class Watchstop:
+
+    def start(self):
+        self.start_time = time.time()
+
+    def stop(self):
+        self.stop_time = time.time()
+
+    def duration(self):
+        return (self.stop_time - self.start_time) * 1000
+
+    def print(self):
+        print(str(self.duration()) + ' ms')
+
+    def stop_print_start(self, desc):
+        self.stop()
+        print (desc + " " + str(self.duration()) + ' ms')
+        self.start()
 
 
 def main():
@@ -66,14 +88,29 @@ def main():
         [inputs_count, 1],
         [outputs_count, 1]])
 
+    print("PREPARING DATA")
+    learning_inputs = get_learning_data(dataset)
     print("START LEARNING")
-    for epoch in range(0, 10):
-        epoch_result, success_counter = learning_process(dataset, neutral_network)
+    ws = Watchstop()
+    for epoch in range(0, 3):
+        ws.start()
+        epoch_result, success_counter = learning_process(neutral_network, learning_inputs)
         print("EPOKA " + str(epoch) + " SUKCESY " + str(success_counter) + " / " + str(dataset["learning"].shape[0]))
+        ws.stop_print_start("FULL TIME ==")
         # print(epoch_result)
         # visualize_on_plot(epoch_result)
 
+    # show_errors_plot()
+    # plt.plot(SUCCESS_PLOT_DATA)
+    # plt.show()
+
     print("STOP LEARNING")
+
+
+def show_errors_plot():
+    for errs in PLOT_DATA:
+        plt.plot(errs)
+    plt.show()
 
 
 def visualize_on_plot(epoch_result):
@@ -81,19 +118,29 @@ def visualize_on_plot(epoch_result):
     plt.plot(PLOT_DATA)
     plt.pause(0.05)
 
+def get_learning_data(dataset):
+    result = []
+    for index, row in dataset["learning"].iterrows():
+        result.append( {
+            "input": prepare_inputs(row),
+            "label": row[Columns.LABEL.value]})
 
-def learning_process(dataset, neutral_network):
+    return result
+
+def learning_process(neutral_network, input_data):
     epoch_result = 0
     success_counter = 0
-
     COUNTER = {}
     for x in AirQuality:
         COUNTER[x.name] = 0
 
-    for index, row in dataset["learning"].iterrows():
-        inputs = prepare_inputs(row)
+    index = 0
+    for row in input_data:
+        inputs = row["input"].copy()
+
         outputs = neutral_network.calculate_output(inputs)
-        lab = row[Columns.LABEL.value]
+
+        lab = row["label"]
         COUNTER[lab] = COUNTER[lab] + 1
 
         expected_values = get_expected_output(lab)
@@ -107,7 +154,14 @@ def learning_process(dataset, neutral_network):
         if np.array_equal(expected_values, [round(v) for v in outputs]):
             success_counter = success_counter + 1
 
+        if index % 10 == 0:
+            SUCCESS_PLOT_DATA.append(success_counter)
+            update_plot_data(errors)
+        index += 1
+
+
     # print(COUNTER)
+
     return epoch_result, success_counter
 
     # waga = waga + współczynnik_uczenia * wyjście * błąd

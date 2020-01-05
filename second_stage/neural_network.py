@@ -12,7 +12,9 @@ def derivative_of_sigmoid(x):
     return f * (1 - f)
 
 
-LEARNING_RATE = 0.1
+LEARNING_RATE = 0.5
+MOMENTUM_RATE = 0.1
+MOMENTUM_ACTIVE = True
 
 
 class Neuron:
@@ -20,9 +22,13 @@ class Neuron:
 
     def __init__(self, number_of_inputs):
         self.wages = []
+        self.prev_wages = []
         for x in range(0, number_of_inputs):
             self.wages.append(np.random.rand(1)[0])
-        # self.wages = np.random.rand(number_of_inputs)
+            # self.wages.append(0.25)
+            self.prev_wages.append(0)
+            # self.wages = np.random.rand(number_of_inputs)
+
 
     def activation_func(self, value):
         return sigmoid(value)
@@ -44,9 +50,16 @@ class Neuron:
     #     result = np.multiply(errors, self.wages)
     #     return self.derivative_activation_func(sum(result))
     def update_wages(self, error):
+        old_wages = self.wages
         tmp = LEARNING_RATE * self.last_derivative_output * error
         deltas = np.multiply(self.last_inputs, tmp)
         self.wages = np.add(self.wages, deltas)
+
+        if MOMENTUM_ACTIVE:
+            momentum_value = np.multiply(np.subtract(self.wages, self.prev_wages), MOMENTUM_RATE)
+            self.wages = np.add(self.wages, momentum_value)
+
+        self.prev_wages = old_wages
 
     def calculate_error(self, errors):
         return np.sum(np.multiply(self.wages, errors))
