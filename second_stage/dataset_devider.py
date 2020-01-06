@@ -41,4 +41,4 @@ def find_dataset_indexes(all_rows_count):
     size = learning_rows_count + testing_rows_count + validating_rows_count
     correct = all_rows_count - size
     learning_rows_count = learning_rows_count + correct
-    return learning_rows_count, testing_rows_count, validating_rows_count
+    return 1000, testing_rows_count, validating_rows_count

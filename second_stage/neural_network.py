@@ -1,3 +1,4 @@
+import json
 import math
 
 import numpy as np
@@ -14,7 +15,7 @@ def derivative_of_sigmoid(x):
 
 LEARNING_RATE = 0.5
 MOMENTUM_RATE = 0.1
-MOMENTUM_ACTIVE = True
+MOMENTUM_ACTIVE = False
 
 
 class Neuron:
@@ -24,11 +25,10 @@ class Neuron:
         self.wages = []
         self.prev_wages = []
         for x in range(0, number_of_inputs):
-            self.wages.append(np.random.rand(1)[0])
-            # self.wages.append(0.25)
+            # self.wages.append(np.random.rand(1)[0])
+            self.wages.append(0.25)
             self.prev_wages.append(0)
             # self.wages = np.random.rand(number_of_inputs)
-
 
     def activation_func(self, value):
         return sigmoid(value)
@@ -41,14 +41,12 @@ class Neuron:
         result = np.multiply(inputs, self.wages)
         suma = sum(result)
 
-        self.last_output = self.activation_func(suma)
+        tmp = self.activation_func(suma)
+        self.last_output = tmp
         self.last_derivative_output = self.derivative_activation_func(suma)
 
-        return self.last_output
+        return tmp
 
-    # def backpropagation(self, errors):
-    #     result = np.multiply(errors, self.wages)
-    #     return self.derivative_activation_func(sum(result))
     def update_wages(self, error):
         old_wages = self.wages
         tmp = LEARNING_RATE * self.last_derivative_output * error
@@ -88,17 +86,14 @@ class Layer:
         else:
             res = [n.wages for n in self.neurons]
             l = res[0].__len__()
-            res.append(np.zeros(l))
+            res.append([0] * l)
             return res
 
-    # def backpropagation(self, errors):
-    #     return [n.calculate_error(errors) for n in self.neurons]
 
     def save_errors(self, errors):
         self.current_errors = errors
 
     def backpropagation(self, errors):
-        # errors.append(0)  ????????? TODO co z bias ????
         neuron_wages = np.array(self.get_neuron_wages(errors))
         length = neuron_wages.shape[1]
 
@@ -128,6 +123,23 @@ BIAS_VALUE = 1
 class NeutralNetwork:
     # layers = []
 
+    def load_neuron(self, neuronDATA):
+        n = Neuron(0)
+        n.__dict__ = neuronDATA
+        return n
+
+    def load_layer(self, layer):
+        l = Layer(0, 0, 0)
+        l.__dict__ = layer
+        tmp_neurons = l.__dict__["neurons"]
+        l.__dict__["neurons"] = [self.load_neuron(n) for n in tmp_neurons]
+        return l
+
+    def load(self, data):
+        self.__dict__ = json.loads(data)
+        tmp_layers = self.__dict__["layers"]
+        self.layers = [self.load_layer(l) for l in tmp_layers]
+
     def __init__(self, number_of_inputs, layers):
         self.layers = []
         number_of_outputs_of_prev_layer = number_of_inputs
@@ -147,7 +159,7 @@ class NeutralNetwork:
 
     def backpropagation(self, errors):
         errors_of_prev_layer = errors
-        # print(errors)
+
         for layer in reversed(self.layers):
             layer.save_errors(errors_of_prev_layer)
 
