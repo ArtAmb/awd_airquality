@@ -29,7 +29,7 @@ def main():
     learning_inputs = get_learning_data(dataset, True)
     print("START LEARNING")
     ws = Watchstop()
-    for epoch in range(0, 2):
+    for epoch in range(0, 10):
         ws.start()
         epoch_result, success_counter = start_process(neutral_network, learning_inputs, True)
         print("EPOKA " + str(epoch) + " SUKCESY " + str(success_counter) + " / " + str(dataset["learning"].shape[0]))
@@ -38,7 +38,6 @@ def main():
         epoch_result2, success_counter2 = start_process(neutral_network, learning_inputs, False)
         print("TESTY SUKCESY " + str(success_counter2) + " / " + str(dataset["learning"].shape[0]))
         ws.stop_print_start("FULL TIME ==")
-        utils.dumps_to_file(neutral_network)
         # print(epoch_result)
 
     # show_important_errors()

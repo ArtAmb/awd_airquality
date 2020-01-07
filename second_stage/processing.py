@@ -98,10 +98,10 @@ def start_process(neutral_network, input_data, learning):
         new_outs = [change_value(o, max_v) for o in outputs]
         if np.array_equal(expected_values, new_outs):
             success_counter += 1
-        else:
-            print("REAL == " + str(outputs))
-            print("ROUNDED == " + str(new_outs))
-            print_info(expected_values, outputs)
+        # else:
+        #     print("REAL == " + str(outputs))
+        #     print("ROUNDED == " + str(new_outs))
+        #     print_info(expected_values, outputs)
 
         errors = np.subtract(expected_values, outputs)
         epoch_result = errors

@@ -65,22 +65,40 @@ def read_dataset():
     data = pd.read_csv("labeled_dataset.csv", delimiter=",")
     return dd.devide_dataset(data)
 
+
+class Normalizer:
+    def __init__(self, min, max):
+        self.min = min
+        self.max = max
+        self.max_minus_min = max - min
+
+    def normalize(self, value):
+        return (value - self.min) / self.max_minus_min
+
+
 def get_learning_data(dataset, shuffle):
     if shuffle:
         rows = dataset["learning"].sample(frac=1)
     else:
         rows = dataset["learning"]
 
+    MIN_MAX_NORMALIZER = {}
+    for col in IMPORTANT_COLUMNS:
+        tmp_col = rows[col.value]
+        MIN_MAX_NORMALIZER[col.value] = Normalizer(min(tmp_col), max(tmp_col))
+
     result = []
     for index, row in rows.iterrows():
         result.append({
-            "input": prepare_inputs(row),
+            "input": prepare_inputs(row, MIN_MAX_NORMALIZER),
             "label": row[Columns.LABEL.value]})
 
     return result
 
-def prepare_inputs(row):
+
+def prepare_inputs(row, MIN_MAX_NORMALIZER):
     inputs = []
+
     for col in IMPORTANT_COLUMNS:
-        inputs.append(row[col.value])
+        inputs.append(MIN_MAX_NORMALIZER[col.value].normalize(row[col.value]))
     return inputs
