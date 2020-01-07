@@ -71,6 +71,11 @@ def get_expected_output(expected_label):
     result[idx] = 1
     return result
 
+def change_value(val, max):
+    if val == max:
+        return 1
+    else:
+        return 0
 
 def start_process(neutral_network, input_data, learning):
     epoch_result = 0
@@ -89,10 +94,14 @@ def start_process(neutral_network, input_data, learning):
         expected_values = get_expected_output(lab)
         # print_info(expected_values, outputs)
 
-        if np.array_equal(expected_values, [round(v) for v in outputs]):
+        max_v = max(outputs)
+        new_outs = [change_value(o, max_v) for o in outputs]
+        if np.array_equal(expected_values, new_outs):
             success_counter += 1
-        # else:
-        #     print_info(expected_values, outputs)
+        else:
+            print("REAL == " + str(outputs))
+            print("ROUNDED == " + str(new_outs))
+            print_info(expected_values, outputs)
 
         errors = np.subtract(expected_values, outputs)
         epoch_result = errors
@@ -100,8 +109,8 @@ def start_process(neutral_network, input_data, learning):
         if learning:
             neutral_network.backpropagation(errors)
 
-        if index % 10 == 0:
-            SUCCESS_PLOT_DATA.append(success_counter)
+        # if index % 10 == 0:
+        #     SUCCESS_PLOT_DATA.append(success_counter)
         SUCCESS_PLOT_DATA.append(success_counter)
 
         index += 1

@@ -13,7 +13,7 @@ def derivative_of_sigmoid(x):
     return f * (1 - f)
 
 
-LEARNING_RATE = 0.5
+LEARNING_RATE = 0.1
 MOMENTUM_RATE = 0.1
 MOMENTUM_ACTIVE = False
 

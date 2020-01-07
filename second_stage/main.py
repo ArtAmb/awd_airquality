@@ -1,6 +1,7 @@
 import pandas as pd
 
 import second_stage.dataset_devider as dd
+from second_stage import utils
 from second_stage.labels import AirQuality
 from second_stage.neural_network import NeutralNetwork
 from second_stage.processing import print_stats, IMPORTANT_COLUMNS, start_process, show_not_important_errors, \
@@ -25,21 +26,24 @@ def main():
         [outputs_count, 1]])
 
     print("PREPARING DATA")
-    learning_inputs = get_learning_data(dataset, False)
+    learning_inputs = get_learning_data(dataset, True)
     print("START LEARNING")
     ws = Watchstop()
-    for epoch in range(0, 10):
+    for epoch in range(0, 2):
         ws.start()
         epoch_result, success_counter = start_process(neutral_network, learning_inputs, True)
         print("EPOKA " + str(epoch) + " SUKCESY " + str(success_counter) + " / " + str(dataset["learning"].shape[0]))
         # epoch_result2, success_counter2 = start_process(neutral_network, learning_inputs, False)
         # print("EPOKA " + str(epoch) + " SUKCESY " + str(success_counter2) + " / " + str(dataset["learning"].shape[0]))
+        epoch_result2, success_counter2 = start_process(neutral_network, learning_inputs, False)
+        print("TESTY SUKCESY " + str(success_counter2) + " / " + str(dataset["learning"].shape[0]))
         ws.stop_print_start("FULL TIME ==")
+        utils.dumps_to_file(neutral_network)
         # print(epoch_result)
 
-    show_important_errors()
-    show_not_important_errors()
-    show_success_plot()
+    # show_important_errors()
+    # show_not_important_errors()
+    # show_success_plot()
     # show_errors_plot()
 
 
