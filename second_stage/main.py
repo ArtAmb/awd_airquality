@@ -4,8 +4,7 @@ import second_stage.dataset_devider as dd
 from second_stage import utils
 from second_stage.labels import AirQuality
 from second_stage.neural_network import NeutralNetwork
-from second_stage.processing import print_stats, IMPORTANT_COLUMNS, start_process, show_not_important_errors, \
-    show_important_errors, show_success_plot
+from second_stage.processing import print_stats, IMPORTANT_COLUMNS, start_process, show_success_plot, SUCCESS_PLOT_DATA
 from second_stage.utils import Watchstop, get_learning_data
 
 
@@ -27,24 +26,27 @@ def main():
 
     print("PREPARING DATA")
     learning_inputs = get_learning_data(dataset, True)
+    learning_rows_count = dataset["learning"].shape[0]
+    EPOCH_COUNT = 100
+
     print("START LEARNING")
     ws = Watchstop()
-    for epoch in range(0, 10):
+    for epoch in range(0, EPOCH_COUNT):
         ws.start()
         epoch_result, success_counter = start_process(neutral_network, learning_inputs, True)
-        print("EPOKA " + str(epoch) + " SUKCESY " + str(success_counter) + " / " + str(dataset["learning"].shape[0]))
-        # epoch_result2, success_counter2 = start_process(neutral_network, learning_inputs, False)
-        # print("EPOKA " + str(epoch) + " SUKCESY " + str(success_counter2) + " / " + str(dataset["learning"].shape[0]))
+        print("EPOKA " + str(epoch) + " SUKCESY " + str(success_counter) + " / " + str(learning_rows_count))
         epoch_result2, success_counter2 = start_process(neutral_network, learning_inputs, False)
-        print("TESTY SUKCESY " + str(success_counter2) + " / " + str(dataset["learning"].shape[0]))
+        print("TESTY SUKCESY " + str(success_counter2) + " / " + str(learning_rows_count))
+
+        SUCCESS_PLOT_DATA.append(success_counter2)
         ws.stop_print_start("FULL TIME ==")
         # print(epoch_result)
-
+    utils.dumps_to_file(neutral_network=neutral_network, epoch_count=EPOCH_COUNT,
+                        learning_rows_count=learning_rows_count, success_plot=SUCCESS_PLOT_DATA)
     # show_important_errors()
     # show_not_important_errors()
-    # show_success_plot()
+    show_success_plot()
     # show_errors_plot()
-
 
     print("STOP LEARNING")
 

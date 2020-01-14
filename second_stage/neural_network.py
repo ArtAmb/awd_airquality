@@ -5,7 +5,10 @@ import numpy as np
 
 
 def sigmoid(x):
-    return 1 / (1 + math.exp(-x))
+    try:
+        return 1 / (1 + math.exp(-x))
+    except OverflowError:
+        return float('inf')
 
 
 def derivative_of_sigmoid(x):
@@ -13,9 +16,9 @@ def derivative_of_sigmoid(x):
     return f * (1 - f)
 
 
-LEARNING_RATE = 0.1
+LEARNING_RATE = 0.5
 MOMENTUM_RATE = 0.1
-MOMENTUM_ACTIVE = False
+MOMENTUM_ACTIVE = True
 
 
 class Neuron:
@@ -25,8 +28,8 @@ class Neuron:
         self.wages = []
         self.prev_wages = []
         for x in range(0, number_of_inputs):
-            # self.wages.append(np.random.rand(1)[0])
-            self.wages.append(0.25)
+            self.wages.append(np.random.rand(1)[0])
+            # self.wages.append(0.25)
             self.prev_wages.append(0)
             # self.wages = np.random.rand(number_of_inputs)
 
@@ -136,7 +139,7 @@ class NeutralNetwork:
         return l
 
     def load(self, data):
-        self.__dict__ = json.loads(data)
+        self.__dict__ = data
         tmp_layers = self.__dict__["layers"]
         self.layers = [self.load_layer(l) for l in tmp_layers]
 

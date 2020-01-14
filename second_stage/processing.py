@@ -111,7 +111,6 @@ def start_process(neutral_network, input_data, learning):
 
         # if index % 10 == 0:
         #     SUCCESS_PLOT_DATA.append(success_counter)
-        SUCCESS_PLOT_DATA.append(success_counter)
 
         index += 1
         if learning:

@@ -7,7 +7,7 @@ import pandas as pd
 
 import second_stage.dataset_devider as dd
 from second_stage.dataset_manager import Columns
-from second_stage.neural_network import NeutralNetwork
+from second_stage.neural_network import NeutralNetwork, MOMENTUM_ACTIVE, MOMENTUM_RATE, LEARNING_RATE
 from second_stage.processing import IMPORTANT_COLUMNS
 
 
@@ -42,21 +42,43 @@ def toJSON(obj):
     return json.dumps(obj, default=lambda o: convert(o), sort_keys=True, indent=4)
 
 
-def dumps_to_file(neutral_network):
+def dumps_to_file(neutral_network, epoch_count=-1, learning_rows_count=-1, success_plot=[]):
     now = datetime.now()
     millis = int(round(time.time() * 1000))
     dt_string = now.strftime("%d_%m_%Y__%H_%M_%S")
 
-    jsonData = toJSON(neutral_network)
+    objToSave = {
+        "momentum": MOMENTUM_ACTIVE,
+        "momentum_rate": MOMENTUM_RATE,
+        "learning_rate": LEARNING_RATE,
+        "epoch_count": epoch_count,
+        "learning_rows_count": learning_rows_count,
+        "SUCCESS_PLOT_DATA": success_plot,
+        "neutral_network": neutral_network
+    }
+
+    jsonData = toJSON(objToSave)
+
     file = open("saved/" + dt_string + '.txt', 'w+')
     file.write(jsonData)
-
 
 def read_from_file(file_name):
     file = open("saved/" + file_name + '.txt')
     jsonDATA = file.read()
+    obj = json.loads(jsonDATA)
     nn = NeutralNetwork(0, [])
-    nn.load(jsonDATA)
+    nn.load(obj["neutral_network"])
+
+    momentum = obj["momentum"]
+    if momentum:
+        print("Propagacja wsteczna z MOMENTUM")
+        print("Wspołczynnik momentum: " + str(obj["momentum_rate"]))
+    else:
+        print("Propagacja wsteczna wersja standardowa")
+    print("Współczynnik uczenia: " + str(obj["learning_rate"]))
+    print("Ilosc epok: " + str(obj["epoch_count"]))
+
+
     return nn
 
 
@@ -77,10 +99,19 @@ class Normalizer:
 
 
 def get_learning_data(dataset, shuffle):
+    return get_data(dataset, "learning", shuffle)
+
+def get_testing_data(dataset, shuffle):
+    return get_data(dataset, "testing", shuffle)
+
+def get_validating_data(dataset, shuffle):
+    return get_data(dataset, "validating", shuffle)
+
+def get_data(dataset, type, shuffle):
     if shuffle:
-        rows = dataset["learning"].sample(frac=1)
+        rows = dataset[type].sample(frac=1)
     else:
-        rows = dataset["learning"]
+        rows = dataset[type]
 
     MIN_MAX_NORMALIZER = {}
     for col in IMPORTANT_COLUMNS:
